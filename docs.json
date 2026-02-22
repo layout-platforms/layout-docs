@@ -3,14 +3,15 @@
   "name": "Layout Mobile",
   "theme": "mint",
   "logo": {
-    "light": "https://firebasestorage.googleapis.com/v0/b/layoutmedia-dashboard.firebasestorage.app/o/dashboard-content%2Flayout-h-b-01.png?alt=media&token=c3d6308f-dffb-4604-b735-146cb8381ba7",
-    "dark": "https://firebasestorage.googleapis.com/v0/b/layoutmedia-dashboard.firebasestorage.app/o/dashboard-content%2Flayout-h-w-01.png?alt=media&token=620baab1-2e45-4836-ae66-09c728ac507b"
+    "light": "/public/logo-light.png",
+    "dark": "/public/logo-dark.png"
   },
-  "favicon": "https://firebasestorage.googleapis.com/v0/b/layoutmedia-dashboard.firebasestorage.app/o/dashboard-content%2Flayout-favicon.png?alt=media&token=85c557c3-4ea3-4072-b6af-ac19f8a488fa",
+  "logoLink": "https://layoutmobile.com",
+  "favicon": "/public/favicon.png",
   "colors": {
     "primary": "#025BFE",
-    "light": "#000000",
-    "dark": "#ffffff"
+    "light": "#025BFE",
+    "dark": "#025BFE"
   },
   "topbarLinks": [],
   "topbarCtaButton": {

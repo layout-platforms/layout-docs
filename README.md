@@ -60,5 +60,6 @@ Then open [http://localhost:3000](http://localhost:3000).
 - **reliability.mdx** — Idempotency, order state, sync.
 - **security.mdx** — Tenant isolation, auth, payments, webhooks.
 - **business-value.mdx** — Value for owners, evaluators, investors.
+- **public/** — Static assets (favicon, logo light/dark) served with the site so the logo doesn’t reload on every page change.
 
 Content is high-level and avoids internal implementation details, schemas, and secrets.
