@@ -51,5 +51,35 @@
     ]
   },
   "footerSocials": {},
-  "backgroundImage": ""
+  "backgroundImage": "",
+  "navbar": {
+    "links": [
+      {
+        "label": "Home",
+        "href": "https://layoutmobile.com"
+      },
+      {
+        "label": "Dashboard",
+        "href": "https://app.layoutmobile.com"
+      },
+      {
+        "label": "Support",
+        "href": "https://support.layoutmobile.com"
+      },
+      {
+        "label": "Status",
+        "href": "https://status.layoutmobile.com"
+      }
+    ]
+  },
+  "banner": {
+    "dismissible": false
+  },
+  "footer": {
+    "socials": {
+      "website": "https://layoutmobile.com",
+      "linkedin": "https://linkedin.com/company/layoutmobile ",
+      "instagram": "https://www.instagram.com/layoutmobile/"
+    }
+  }
 }
