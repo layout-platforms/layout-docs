@@ -73,8 +73,8 @@
     ]
   },
   "banner": {
-    "dismissible": false
-  },
+  "enabled": false
+}
   "footer": {
     "socials": {
       "website": "https://layoutmobile.com",
