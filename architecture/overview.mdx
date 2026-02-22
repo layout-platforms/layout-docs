@@ -1,0 +1,58 @@
+---
+title: Architecture overview
+description: "High-level structure of Layout Mobile: customer app, dashboard, kitchen panel, and backend."
+---
+
+This page describes how Layout Mobile is structured at an infrastructure level—without implementation details, schemas, or internal APIs. It’s for technical evaluators and partners who need a clear mental model of the system.
+
+## System components
+
+Layout Mobile has four main surfaces and a backend that ties them together:
+
+| Component | Role | Users |
+|-----------|------|--------|
+| **Customer app** | Branded iOS app for browsing menu, choosing location, ordering, and tracking status. | End customers |
+| **Merchant dashboard** | Web app for branding, Square connection, menu/locations (synced from Square), order settings, loyalty, and analytics. | Owners and operators |
+| **Kitchen panel** | Web-based panel for viewing orders and updating status by location. | Kitchen and store staff |
+| **Backend** | APIs, Square sync, webhooks, payment orchestration, and secure token storage. | Used by all of the above |
+
+Data and identity are **tenant-scoped**: every request and record is tied to a company (and often a location). There is no shared cross-tenant data layer; isolation is built into the model.
+
+## Data flow (conceptual)
+
+- **Square** is the source of truth for catalog, locations, and payments. Layout connects via OAuth and keeps a secure, per-tenant connection.
+- **Catalog and locations** flow from Square into the platform via initial sync and ongoing updates (webhooks and scheduled jobs). The customer app and dashboard read this data; they don’t write catalog back to Square from the app.
+- **Orders** are created in the platform (customer app → backend), then payment is processed with Square. Order state (e.g. pending payment → paid → status updates) is stored in the platform; kitchen and customer app consume it.
+- **Kitchen** reads and updates order status. When Layout KDS is used, those updates can drive customer-facing status and optional notifications.
+
+So: **Square owns catalog, locations, and money movement**. Layout owns **app configuration, order lifecycle, and kitchen display**, and orchestrates payment with Square.
+
+## Authentication and access
+
+- **Customer app** — Users sign in (e.g. phone auth). Sessions are validated by the backend for API calls (e.g. checkout). Tokens are not shared across companies.
+- **Dashboard and panel** — Staff and owners sign in to the web app; access is scoped to their company (and optionally location for the panel). Roles and company membership determine what they can see and change.
+- **Square** — Connection is per company. OAuth tokens are stored securely and used only for that company’s API calls. Webhooks from Square are verified (signature check) before processing.
+
+No customer or merchant credentials are mixed; each channel has clear identity and scope.
+
+## Where things run
+
+- **Customer app** — Native iOS; talks to backend APIs and (where used) real-time listeners for order status.
+- **Dashboard and panel** — Web apps; talk to the same backend and tenant-scoped data store.
+- **Backend** — Hosted services (e.g. serverless/cloud) that handle HTTP and webhook endpoints, Square sync, and background jobs. No merchant-hosted infrastructure is required.
+
+We don’t document specific cloud providers or regions here; the important point is that the system is **hosted and operated by Layout**, and merchants don’t run servers or databases.
+
+## Integration points
+
+| External system | Layout’s role |
+|-----------------|----------------|
+| **Square** | OAuth, catalog/location sync, payment creation, optional loyalty sync. Webhooks for catalog and location changes (and optionally order/fulfillment). |
+| **Push / Live Activity** | Optional customer notifications and lock-screen order status (e.g. iOS). |
+| **Billing** | Subscription and billing are handled separately (e.g. Stripe); not part of the core ordering or Square flow. |
+
+## Next steps
+
+- [Integration flow](/architecture/integration-flow) — Step-by-step flow from customer order to payment and kitchen.
+- [Square integration](/integrations/square) — What we sync, how we connect, and how updates flow.
+- [Multi-location](/multi-location) — How companies and locations are modeled and used.

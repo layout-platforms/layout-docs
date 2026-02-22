@@ -1,0 +1,54 @@
+---
+title: Reliability
+description: How Layout Mobile handles failures, retries, and consistency so orders and payments stay correct.
+---
+
+This page describes how we approach **reliability** at a conceptual level—for technical evaluators and partners who care about correctness under retries, duplicates, and partial failures. We don’t document internal retry counts or timeouts; we focus on principles and behavior.
+
+## Payment and idempotency
+
+**Problem** — Networks and devices can retry. A customer might tap “Pay” twice, or the app might retry after a timeout. Without care, that could create duplicate charges.
+
+**Approach** — Payment requests are **idempotent**. The client sends a stable key (e.g. derived from order and payment context); the backend sends that same key to Square when creating the payment. Square treats duplicate requests with the same idempotency key as one payment. So:
+
+- A single logical payment corresponds to at most one charge.
+- Retries and duplicate taps don’t result in double charges.
+
+The same idea is applied where we trigger loyalty or gift-card actions so that retries don’t double-apply rewards or deductions.
+
+## Order state and payment
+
+Before creating a payment, the backend:
+
+- **Verifies** the customer’s identity (e.g. valid session token).
+- **Loads** the order and checks that it’s in a payable state (e.g. pending payment).
+- If the order is already paid (or otherwise not payable), the backend returns an error (e.g. conflict) instead of calling Square again.
+
+So even without idempotency, we avoid creating a second payment for the same order. Idempotency adds a second layer of protection for retries and duplicates.
+
+## Catalog and location sync
+
+- **Source of truth** — Square. We sync into the platform so the app and dashboard have current data.
+- **Triggers** — Square webhooks (e.g. catalog or location changed) drive updates. We may also run **scheduled sync** jobs so that if a webhook was missed or delayed, data still converges.
+- **Scope** — Sync is per-tenant (per company). One merchant’s data never overwrites another’s.
+
+We don’t document sync frequency or retry policies—only that we use both event-driven and periodic sync to keep catalog and locations aligned with Square.
+
+## Webhook verification
+
+Incoming webhooks (e.g. from Square) are **verified** before processing (e.g. signature/HMAC). Invalid or tampered requests are rejected. That way we don’t act on bogus events or cross-tenant leakage.
+
+## What we don’t guarantee here
+
+We don’t document SLAs, uptime numbers, or RTO/RPO in this doc. The intent is to show that we **design for** idempotency, clear order state, and verified webhooks so that payments and data stay correct under retries and failures. For formal SLAs or incident process, refer to your agreement or Layout’s status page.
+
+## Summary
+
+| Area | Principle |
+|------|------------|
+| **Payments** | Idempotency keys with Square; order state checked before payment; no double charge on retries. |
+| **Orders** | Single payable state per order; conflict response if already paid. |
+| **Sync** | Webhooks + scheduled sync; tenant-scoped; Square remains source of truth. |
+| **Webhooks** | Signature verification; reject invalid or cross-tenant events. |
+
+For how we protect data and access, see [Security](/security). For how orders and payments flow end-to-end, see [Integration flow](/architecture/integration-flow).

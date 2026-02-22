@@ -1,0 +1,40 @@
+---
+title: Multi-location
+description: How Layout Mobile models companies and locations so one app serves all your stores.
+---
+
+Layout Mobile is built for **multi-location** merchants. One brand, one app, many stores. This page explains how we model that—for owners who run several locations and for technical evaluators who care about data and access boundaries.
+
+## Company and locations
+
+- **Company** — One merchant account (e.g. your coffee shop brand). All configuration, Square connection, branding, and users are scoped to this company. In our model, “tenant” means one company.
+- **Locations** — A company has many locations. In Layout, locations are **synced from Square**. Each Square location can be enabled or disabled for mobile ordering in the dashboard. The customer app shows only enabled locations for that company.
+
+So: **one company, many locations**. The app doesn’t require a separate build per location; a single app instance (configured with that company) shows all of that company’s enabled locations. The customer chooses a location, then orders; the order is tied to that location.
+
+## How it works in the app
+
+1. **Location picker** — The customer sees the list of your enabled locations (name, address, etc.) and selects one before ordering (or the app may remember the last choice).
+2. **Menu and catalog** — Catalog is synced from Square at the company level; items and categories can be shared across locations or vary by location depending on how you manage them in Square. The app shows what’s available for the selected location as we understand it from Square.
+3. **Orders** — Every order is stored with a company and a location. Kitchen display and reporting are location-aware: staff pick a location in the panel and see that location’s orders; analytics can be broken down by location.
+
+So: **one app, one company, many locations**—with location chosen per order and enforced in the backend.
+
+## Dashboard and panel
+
+- **Dashboard** — Branding and Square connection are company-wide. You can enable or disable specific locations for mobile ordering and set order/pickup behavior (e.g. default pickup time). Location list comes from Square and stays in sync.
+- **Kitchen panel** — Staff sign in and **select a location**. The panel then shows orders for that location only. Status updates (e.g. accepted → making → ready → completed) apply to that location’s orders. Switching location switches the view.
+
+So: **company-level config**, **location-level operations** in the panel and in order data.
+
+## Data and access
+
+- **Data scope** — All data (orders, catalog, locations, Square connection) is keyed by company. Orders and panel state are also keyed by location. There is no cross-company access; within a company, location is used to filter and scope.
+- **Square** — Your Square account may have many locations; we sync them and let you choose which are active in the app. Catalog can be shared across locations in Square; we reflect that. We don’t document Square’s exact location/catalog model—only that we sync and scope by company and location.
+
+## Why it matters
+
+- **For owners** — One app for your brand; customers pick the store; you manage which locations are live and see orders and analytics by location.
+- **For evaluators** — Clear tenant (company) and location model; no cross-tenant data; location is required for ordering and kitchen display.
+
+For how data flows from Square into the app and panel, see [Integration flow](/architecture/integration-flow) and [Square integration](/integrations/square).

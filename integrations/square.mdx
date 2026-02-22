@@ -1,0 +1,72 @@
+---
+title: Square integration
+description: How Layout connects to Square, what we sync, and how catalog, locations, and payments stay in sync.
+---
+
+Layout Mobile is built for merchants who already use **Square** for POS, payments, and often loyalty. This page explains how we integrate with Square at a high level—without exposing credentials, URLs, or internal APIs.
+
+## Why Square-first
+
+Many multi-location coffee shops run on Square for register, payments, and reporting. Layout adds a **branded mobile app and kitchen visibility** without replacing that stack. We:
+
+- Use **Square as the source of truth** for catalog and locations.
+- Process **payments through Square** so funds and reporting stay in your Square account.
+- **Sync** catalog and locations so the app and dashboard stay aligned with what you manage in Square.
+- Optionally support **Square Loyalty** (and gift cards) so the app can show balance and enrollment.
+
+You keep one place to manage menu and money; we keep the app and kitchen in sync.
+
+## Connecting your Square account
+
+Layout uses **Square OAuth 2.0** so you authorize access once from your Square account:
+
+1. From the Layout dashboard, you start **Connect Square**.
+2. You’re redirected to Square to sign in and grant the requested permissions (e.g. catalog, locations, payments, loyalty if used).
+3. Square redirects back with an authorization code; Layout exchanges it for **access and refresh tokens**.
+4. Those tokens are stored **securely and per-tenant** (per company). They’re used only for that company’s API calls—never shared across merchants.
+5. After a successful connection, Layout runs an **initial sync** of locations and catalog so the dashboard and app have your current data.
+
+Token storage and refresh are handled by the backend; you don’t manage tokens yourself. We don’t document storage details here—only that access is scoped and secure.
+
+## What we sync
+
+| Data | Direction | How it’s kept up to date |
+|------|-----------|---------------------------|
+| **Locations** | Square → Layout | Initial sync after connect; then Square webhooks (e.g. location created/updated/deleted) and optional scheduled sync. |
+| **Catalog** (items, categories) | Square → Layout | Initial sync after connect; then Square webhooks (e.g. catalog version updated) and optional scheduled sync. |
+| **Loyalty** (if enabled) | Square ↔ Layout | Sync of program and account data so the app can show balance and support enrollment/redemption; kept in sync on a schedule and after relevant actions. |
+| **Gift cards** (if used) | Square → Layout | Sync so the app can show and sell gift cards; backend creates/links as needed. |
+
+We do **not** write catalog or locations back to Square from the app or dashboard. Edits to menu and locations happen in Square; Layout reflects them.
+
+## Payments
+
+- **Checkout** — The customer pays in the app using Square’s payment flow (e.g. card, Apple Pay). The app sends a payment nonce (and order reference) to the Layout backend; the backend calls **Square’s Payments API** to create the payment.
+- **Idempotency** — Each payment request is sent with an idempotency key derived from the order (and payment context). Retries (e.g. network or duplicate tap) don’t create a second charge.
+- **Settlement and reporting** — All settlement and reporting stay in Square. Layout does not hold card data or settle funds.
+
+So: **Square processes the payment**; Layout orchestrates the request and ties it to the order in the platform.
+
+## Webhooks (Square → Layout)
+
+Square can send webhooks when catalog or locations change (and optionally for order/fulfillment events). Layout:
+
+- **Verifies** each webhook using Square’s signature (e.g. HMAC). Requests that don’t verify are rejected.
+- **Processes** only events for the connected merchant; tenant scope is enforced.
+- **Updates** the synced catalog or locations (or order/fulfillment state) so the app and dashboard stay current.
+
+We don’t document webhook URLs or payload formats—only that verification is required and that processing is tenant-scoped.
+
+## KDS and orders
+
+- **Order creation** — Orders are created in the Layout platform (customer app → backend). Payment is then created in Square and linked to that order.
+- **Layout KDS** — Order status (e.g. accepted → making → ready → completed) is stored in the platform and shown on the Layout kitchen panel. Optionally, Square order/fulfillment webhooks can be used to keep Square and Layout in sync if you use both.
+- **Square KDS only** — If you use only Square’s kitchen display, Layout doesn’t push status; the app can show confirmation and estimated pickup time instead of live status.
+
+## Security and isolation
+
+- **OAuth tokens** — Stored per company; used only for that company’s Square API calls. Not shared across tenants.
+- **Webhooks** — Signature verification and tenant association ensure we only act on legitimate Square events for the right merchant.
+- **Payments** — Customer identity is verified by the backend before creating a payment; order state is checked (e.g. pending payment) to avoid duplicate or invalid charges.
+
+For a broader view of how we think about security, see [Security](/security). For reliability (idempotency, retries, sync), see [Reliability](/reliability).

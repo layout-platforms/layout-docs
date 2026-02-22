@@ -1,0 +1,73 @@
+---
+title: Business value
+description: What Layout Mobile delivers for multi-location coffee shops and how it fits with Square and your operations.
+---
+
+This page summarizes the **business value** of Layout Mobile for multi-location coffee shop owners and for partners or investors evaluating the platform. It stays high-level and avoids implementation detail.
+
+## For multi-location coffee shop owners
+
+### One branded app, all locations
+
+You get a **customer-facing mobile app** under your brand—your name, logo, and colors—that works across all your locations. Customers choose a store, browse your menu, and pay with card or Apple Pay. You don’t build or host the app; Layout runs the platform and keeps it in sync with your Square account.
+
+### Works with what you already use
+
+Layout is built for merchants who already use **Square** for POS and payments. We don’t replace Square; we add a mobile ordering and kitchen layer on top:
+
+- **Catalog and locations** — Managed in Square; we sync so the app always reflects your current menu and stores.
+- **Payments** — Processed by Square. Settlement and reporting stay in your Square account.
+- **Kitchen** — Use our kitchen panel (Layout KDS) or keep Square KDS; we support both.
+
+So you keep one system for register and payments; we add the app and optional kitchen display.
+
+### Control and visibility
+
+- **Dashboard** — Configure branding, which locations are live, order and pickup behavior, and (if you use it) loyalty. View analytics and operations in one place.
+- **Kitchen panel** — See orders by location and move them through status (e.g. accepted → making → ready → completed). Optional customer-facing status and notifications when using Layout KDS.
+- **Multi-location** — One app, many locations; orders and reporting are location-aware so you can see performance by store.
+
+## For technical evaluators
+
+### Clear integration model
+
+- **Square as source of truth** — Catalog, locations, and payments flow through Square. We sync and orchestrate; we don’t duplicate payment processing or replace your POS.
+- **Secure, tenant-scoped** — OAuth for Square; tokens and data scoped by company (and location). No cross-tenant access; webhooks verified.
+- **Reliability** — Idempotent payment creation to avoid double charges; order state checks; webhook verification; sync via events and scheduled jobs.
+
+So: **predictable boundaries** (Square vs Layout), **isolation** (tenant/location), and **designed-in** reliability and security.
+
+### Architecture and operations
+
+- **Hosted platform** — No merchant-hosted servers or databases. Layout runs the backend, dashboard, and panel; the customer app talks to our APIs and (where used) real-time channels for status.
+- **Documented at the right level** — This documentation focuses on concepts, integration flow, reliability, and security. No internal schemas, secrets, or low-level APIs—suitable for evaluation and partner discussions.
+
+## For investors and partners
+
+### Market and product fit
+
+Layout targets **multi-location coffee shops (and similar merchants) on Square** who want:
+
+- A **branded mobile app** without building and maintaining their own.
+- **Alignment with Square** — same catalog, locations, and payments they already use.
+- **Multi-location and kitchen** — one app, location-aware orders, and optional Layout or Square KDS.
+
+The product is scoped to **add value on top of Square**, not replace it—reducing integration risk and fitting how these merchants already operate.
+
+### Technical credibility
+
+- **Integration** — Square OAuth, catalog/location sync, webhooks, idempotent payments. Clear separation of responsibilities (Square = payments and catalog source; Layout = app, orders, kitchen).
+- **Security and reliability** — Tenant isolation, no card data in Layout, verified webhooks, idempotency. Principles are documented and designed into the flow.
+- **Multi-tenant, multi-location** — Company and location model is explicit; data and access are scoped accordingly.
+
+This documentation is the main artifact for **technical credibility**: it’s structured, professional, and focused on architecture, integration, reliability, and security without exposing internals.
+
+## Summary
+
+| Audience | Takeaway |
+|----------|----------|
+| **Owners** | Branded app for all locations; works with Square POS and KDS; one dashboard and optional kitchen panel. |
+| **Evaluators** | Square-first integration; tenant and location isolation; idempotent payments; verified webhooks; no card data in Layout. |
+| **Investors / partners** | Clear product-market fit (Square-based multi-location); documented architecture and security; no internal implementation exposed. |
+
+For the rest of the story, start with [Overview](/overview) and [Architecture overview](/architecture/overview), then [Square integration](/integrations/square), [Reliability](/reliability), and [Security](/security).

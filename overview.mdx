@@ -1,0 +1,59 @@
+---
+title: Overview
+description: Product scope, key concepts, and how Layout Mobile fits with Square and your operations.
+---
+
+Layout Mobile is built for **multi-location coffee shops (and similar merchants) that use Square**. The goal is simple: add a branded mobile ordering experience and kitchen visibility without replacing your POS or KDS.
+
+## Key concepts
+
+### White-label mobile app
+
+Customers see **your** brand: your business name, logo, colors, and menu. The app is a native iOS experience (menu, locations, cart, checkout, loyalty, order status). You don’t host or build the app yourself; Layout runs the platform and keeps it in sync with your Square account and your settings.
+
+### Square as the source of truth
+
+- **Catalog** — Items and categories sync from Square. Edits in Square flow into the app via our sync and webhooks.
+- **Locations** — Your Square locations are synced; you choose which are available for mobile ordering.
+- **Payments** — Checkout uses Square (card, Apple Pay). Funds and reporting stay in your Square account.
+- **Loyalty** — When you use Square Loyalty, we can surface balance and enrollment in the app and keep it in sync.
+
+You keep one place to manage menu and payments; the app reflects that.
+
+### Multi-location by design
+
+Everything is **company-first, then location**. One merchant account (company) has many locations. The app shows your locations; the customer picks one, then orders. Orders and kitchen display are scoped to that location. The dashboard and panel let you manage and view by location.
+
+### Kitchen display (KDS)
+
+Layout supports two modes:
+
+- **Layout KDS** — Our kitchen panel shows orders and status (e.g. accepted → making → ready → completed). Status updates can drive customer-facing order status and optional notifications.
+- **Square KDS** — You keep using Square’s kitchen display; we don’t push status from our side. The app can show an estimated pickup time instead of live status.
+
+Your existing kitchen workflow stays central; we adapt to it.
+
+## What’s in scope
+
+| Layer | What Layout provides |
+|-------|----------------------|
+| **Customer app** | Branded iOS app: menu, locations, cart, Square checkout, loyalty, order status (and optional Live Activity). |
+| **Merchant dashboard** | Branding, menu/location settings (synced from Square), order and pickup settings, loyalty config, analytics, and operations. |
+| **Kitchen panel** | Location picker, order list, status flow, optional sound and layout; works alongside or instead of Square KDS. |
+| **Backend** | Secure APIs and sync: Square OAuth, catalog/location webhooks, order creation and payment, loyalty sync, idempotent payment handling. |
+
+## What stays in your control
+
+- **Square** — All payment processing, settlement, and Square reporting.
+- **Catalog and locations** — Managed in Square; we sync and respect your choices (e.g. which locations are enabled).
+- **Branding and behavior** — Logo, CTA color, app name, and ordering rules (e.g. pickup time estimates) are set in the dashboard.
+
+## Out of scope (for this doc)
+
+We don’t document internal implementation, database schemas, secrets, or low-level APIs. This site focuses on **concepts, integration flow, reliability, and security** so you can evaluate the platform and explain it to stakeholders.
+
+## Next steps
+
+- [Architecture overview](/architecture/overview) — How the system is structured at a high level.
+- [Integration flow](/architecture/integration-flow) — How data moves from Square and through the app and kitchen.
+- [Square integration](/integrations/square) — What we sync and how we connect.

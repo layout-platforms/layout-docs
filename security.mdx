@@ -1,0 +1,55 @@
+---
+title: Security
+description: How Layout Mobile handles identity, tenant isolation, and protection of sensitive data.
+---
+
+This page outlines **security principles** for Layout Mobile—for technical evaluators and partners. We don’t document specific ciphers, key lengths, or internal implementations; we focus on how we think about identity, isolation, and sensitive data.
+
+## Tenant isolation
+
+Layout is **multi-tenant**: many companies (merchants) on one platform. Isolation is enforced at every layer:
+
+- **Data** — All stored data is scoped by company (and often location). There is no shared cross-tenant data; one merchant cannot see or change another’s catalog, orders, or configuration.
+- **APIs** — Requests are authenticated and then scoped to a company (and sometimes a location). Backend logic and data access use that scope; no cross-tenant reads or writes.
+- **Square** — OAuth tokens and Square API usage are per company. Tokens are stored in a tenant-scoped way and used only for that company’s Square calls.
+
+So: **tenant identity is part of every operation**. We don’t document the exact storage paths or query patterns—only that the model is tenant-first and that we don’t mix data or credentials across merchants.
+
+## Authentication and access control
+
+- **Customer app** — Users sign in (e.g. phone-based). The backend verifies the session (e.g. token) before performing actions (e.g. creating an order or payment). Only the authenticated user can place orders in their name.
+- **Dashboard and panel** — Access is controlled by identity and role. Users are associated with a company (and optionally locations). Permissions are enforced so that only authorized users can change branding, Square connection, or view orders and analytics.
+- **Square connection** — Only authorized dashboard users can connect or disconnect Square. Stored tokens are not exposed in the UI or to the customer app.
+
+We don’t enumerate every role or permission—only that access is identity-based and scoped to company (and location where relevant).
+
+## Payment and card data
+
+- **No card storage** — Layout does not store raw card numbers or full magnetic-stripe data. The customer app uses Square’s in-app payment flow; the app gets a nonce (one-time token) and sends that to the Layout backend. The backend forwards the nonce to Square to create the payment. Card data never touches Layout’s systems.
+- **Square** — All payment processing and settlement happen in Square. PCI scope for card data is Square’s; we don’t document Square’s PCI details here.
+
+So: **payments are delegated to Square**; we only pass nonces and order references.
+
+## Secrets and configuration
+
+- **Secrets** — OAuth client credentials, webhook signing keys, and other secrets are not hardcoded or committed to source. They’re managed via a secure configuration/secrets mechanism and injected at runtime where needed.
+- **Per-tenant tokens** — Square OAuth tokens (and similar) are stored in a secure, tenant-scoped store and used only by backend services for that tenant.
+
+We don’t document where or how secrets are stored—only that they’re not in code or public config.
+
+## Webhooks and integrity
+
+- **Verification** — Incoming webhooks (e.g. from Square) are verified using the provider’s signature (e.g. HMAC). Unverified requests are rejected. That prevents spoofed or tampered events from changing data.
+- **Tenant binding** — Each webhook is tied to a specific merchant/connection. We only update that tenant’s data; we don’t use one tenant’s webhook to modify another’s.
+
+## Summary
+
+| Area | Principle |
+|------|------------|
+| **Tenancy** | All data and API use scoped by company (and location); no cross-tenant access. |
+| **Identity** | Customer app, dashboard, and panel use authenticated sessions; actions are tied to the right user and company. |
+| **Payments** | No card data in Layout; nonces only; Square does processing and settlement. |
+| **Secrets** | Not in code or repo; secure, tenant-scoped storage for OAuth and similar. |
+| **Webhooks** | Signature verification; tenant-scoped processing. |
+
+For how we avoid duplicate charges and handle retries, see [Reliability](/reliability). For how Square connects and what we sync, see [Square integration](/integrations/square).
