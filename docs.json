@@ -50,7 +50,11 @@
       }
     ]
   },
-  "footerSocials": {},
+  "footerSocials": {
+    "website": "https://layoutmobile.com",
+    "linkedin": "https://linkedin.com/company/layoutmobile",
+    "instagram": "https://www.instagram.com/layoutmobile/"
+  },
   "backgroundImage": "",
   "navbar": {
     "links": [
@@ -71,15 +75,5 @@
         "href": "https://status.layoutmobile.com"
       }
     ]
-  },
-  "banner": {
-  "enabled": false
-},
-  "footer": {
-    "socials": {
-      "website": "https://layoutmobile.com",
-      "linkedin": "https://linkedin.com/company/layoutmobile ",
-      "instagram": "https://www.instagram.com/layoutmobile/"
-    }
   }
 }
