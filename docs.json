@@ -50,7 +50,11 @@
       }
     ]
   },
-  "footerSocials": {},
+  "footerSocials": {
+    "website": "https://layoutmobile.com",
+    "linkedin": "https://linkedin.com/company/layoutmobile",
+    "instagram": "https://www.instagram.com/layoutmobile/"
+  },
   "backgroundImage": "",
   "navbar": {
     "links": [
@@ -73,12 +77,13 @@
     ]
   },
   "banner": {
-  "enabled": false
-},
+    "content": " ",
+    "dismissible": true
+  },
   "footer": {
     "socials": {
       "website": "https://layoutmobile.com",
-      "linkedin": "https://linkedin.com/company/layoutmobile ",
+      "linkedin": "https://linkedin.com/company/layoutmobile",
       "instagram": "https://www.instagram.com/layoutmobile/"
     }
   }
