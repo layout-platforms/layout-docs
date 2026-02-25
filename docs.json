@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Layout Mobile",
+  "name": "Layout Mobile Documentation",
   "theme": "mint",
   "logo": {
     "light": "/public/logo-light.png",
@@ -86,5 +86,9 @@
       "linkedin": "https://linkedin.com/company/layoutmobile",
       "instagram": "https://www.instagram.com/layoutmobile/"
     }
-  }
+  },
+  "seo": {
+    "indexing": "all"
+  },
+  "description": "Layout Mobile documentation for investors and developers. Explore how our Square-integrated mobile ordering platform works, including architecture, APIs, onboarding flow, loyalty logic, and scalable infrastructure."
 }
