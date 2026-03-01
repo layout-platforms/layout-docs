@@ -4,10 +4,14 @@
   "theme": "mint",
   "logo": {
     "light": "/public/logo-light.png",
-    "dark": "/public/logo-dark.png"
+    "dark": "/public/logo-dark.png",
+    "href": "https://layoutmobile.com"
   },
   "logoLink": "https://layoutmobile.com",
-  "favicon": "/public/favicon.png",
+  "favicon": {
+    "light": "/public/favicon.png",
+    "dark": "/public/favicon.png"
+  },
   "colors": {
     "primary": "#025BFE",
     "light": "#025BFE",
