@@ -1,9 +1,9 @@
 ---
 title: Quickstart
-description: "How merchants get started with Layout Mobile: connect Square, configure the app, and go live."
+description: "How merchants get started with Layout Mobile: choose a plan, connect Square, configure the app, and go live."
 ---
 
-This page outlines the path from signup to a live branded app. It’s aimed at **merchant owners** and **evaluators** who want to understand the flow without touching the dashboard.
+This page outlines the path from signup to a live branded app. It's aimed at **merchant owners** and **evaluators** who want to understand the flow without touching the dashboard.
 
 ## Prerequisites
 
@@ -12,58 +12,85 @@ This page outlines the path from signup to a live branded app. It’s aimed at *
 
 No need to change your existing POS or KDS setup; Layout connects to what you already have.
 
-## Step 1: Create your account
+## Step 1: Create your account and choose a plan
 
-Merchants sign up through the Layout dashboard. Account creation is standard: email, company/business details, and verification. Once in, the dashboard is the control center for branding, Square, locations, and app behavior.
+Merchants sign up through the Layout dashboard. Account creation is standard: email, company/business details, and verification. Once in, you choose a plan:
+
+| Plan | Price | What it unlocks |
+|------|-------|-----------------|
+| **Starter** | $0/month | Branded app, Square loyalty, push notifications, announcements. No ordering. |
+| **Pro** | $250/month | Everything in Starter plus mobile ordering, real-time catalog sync, and revenue analytics. |
+| **Plus** | $500/month | Everything in Pro plus Square gift cards, priority support, and white-glove onboarding. |
+| **Additional location** | +$150/month | Each active location beyond the one included in Pro or Plus. |
+
+Billing is handled via Stripe. A trial promotional offer may be available at signup.
 
 ## Step 2: Connect Square
 
 Layout uses **Square OAuth** so you authorize access once from your Square account:
 
 1. In the dashboard, start the **Connect Square** flow.
-2. You’re redirected to Square to sign in (if needed) and approve the requested permissions.
-3. After you allow access, Layout receives and stores a secure connection to your Square account (tokens are stored in a secure, tenant-scoped way).
+2. You're redirected to Square to sign in (if needed) and approve the requested permissions (catalog, locations, payments, loyalty, gift cards, inventory, and more).
+3. After you allow access, Layout receives and stores a secure connection to your Square account. Tokens are stored in a secure, tenant-scoped way and **automatically refreshed** by the backend — you never have to reconnect due to token expiry.
 4. Layout then performs an initial sync of **locations** and **catalog** (items and categories) into the platform.
 
-From then on, catalog and location changes in Square can be reflected in the app via scheduled sync and Square webhooks. You keep managing menu and locations in Square; the app stays in sync.
+From then on, catalog and location changes in Square are reflected in the app via Square webhooks and a daily scheduled sync job. You keep managing menu and locations in Square; the app stays in sync.
 
 ## Step 3: Configure branding and app behavior
 
 In the dashboard you set:
 
 - **Branding** — Business name, logo (light/dark), primary CTA color. These drive the look of the customer app.
-- **Locations** — Which Square locations are enabled for mobile ordering (all or a subset).
-- **Order and pickup** — Settings like default pickup time estimates and any ordering rules.
+- **Locations** — Which Square locations are enabled for mobile ordering (all or a subset). Additional active locations beyond your plan's included count are billed at $150/month each.
+- **Order and pickup** — Settings like default pickup time estimates, scheduled ordering slots, and prep lead times for the kitchen.
+- **Catalog source** — Whether to sync from standard Square categories or Square Menus (if your account uses the Square Menus feature).
 
-The customer-facing app (e.g. the iOS build for your brand) reads this configuration so it shows your name, colors, menu, and locations without a separate build per merchant.
+The customer-facing iOS app reads this configuration so it shows your name, colors, menu, and locations.
 
-## Step 4: Kitchen display (optional)
+## Step 4: App submission
 
-If you use **Layout’s kitchen panel**:
+Layout prepares and submits your branded iOS app to the App Store on your behalf. The app is published under your brand name with your own App Store listing. This is a one-time process handled as part of onboarding — you don't manage Xcode or provisioning profiles. Universal Links (so shared links open the app directly) are also configured per brand.
+
+## Step 5: Configure engagement features (optional)
+
+From the dashboard you can also set up:
+
+- **Push notifications** — Available on all plans; send targeted messages to your customer base. Loyalty point notifications fire automatically via Square webhooks.
+- **Announcement cards** — In-app cards to highlight promotions or news.
+- **Welcome offer** — A first-order discount for new customers, automatically deduped by phone, device, and email.
+- **Promotions** — In-app promotions with optional Square discount code integration.
+- **Featured items** — Highlight specific menu items at the top of the app.
+- **Gift cards** — Available on Plus; configure gift card designs and let customers buy, reload, and redeem Square gift cards in the app.
+
+## Step 6: Kitchen display (optional)
+
+If you use **Layout's kitchen panel**:
 
 - Staff sign in and select a **location**.
-- Orders for that location appear on the panel with status (e.g. accepted → making → ready → completed).
-- Updating status can drive what the customer sees in the app (and optional push or Live Activity).
+- Orders for that location appear on the panel with status (accepted → making → ready → completed).
+- Updating status drives what the customer sees in the app (and optional push notifications or iOS Live Activity).
 
-If you use **Square KDS** only, you leave kitchen display entirely in Square; the app can still show an estimated pickup time and order confirmation.
+If you use **Square KDS** or **Square Expeditor**, you leave kitchen display in Square; the app can still show an estimated pickup time and order confirmation.
 
-## Step 5: Go live
+## Step 7: Go live
 
 Once Square is connected, branding and locations are set, and (if applicable) the kitchen panel is configured:
 
-- **Customers** download or open your branded app, choose a location, browse the menu, and pay with Square (card or Apple Pay).
-- **Orders** appear in your kitchen (Layout panel or Square KDS, depending on config).
+- **Customers** download your branded app from the App Store, choose a location, browse the menu, and pay with Square (card or Apple Pay).
+- **Orders** appear in your kitchen (Layout panel, Square KDS, or Square Expeditor, depending on config).
 - **You** keep using Square for payments, reporting, and menu/location management; the app and panel stay aligned with Square.
 
 ## Summary
 
 | Step | What happens |
 |------|----------------|
-| 1. Account | Sign up and access the Layout dashboard. |
-| 2. Square | OAuth connect → secure token storage → initial sync of locations and catalog. |
-| 3. Config | Set branding, which locations are active, and order/pickup behavior. |
-| 4. Kitchen | Optionally use Layout’s panel (location-based, status flow) or keep Square KDS. |
-| 5. Live | Customers order in the app; payments in Square; orders in your kitchen. |
+| 1. Account & plan | Sign up, choose Starter / Pro / Plus, billing via Stripe. |
+| 2. Square | OAuth connect → secure token storage with auto-refresh → initial sync of locations and catalog. |
+| 3. Config | Set branding, active locations, order/pickup behavior, and catalog source. |
+| 4. App submission | Layout submits your branded iOS app to the App Store (one-time, handled by Layout). |
+| 5. Engagement | Optionally configure push, announcements, welcome offer, promotions, featured items, gift cards. |
+| 6. Kitchen | Optionally use Layout KDS, Square KDS, or Square Expeditor. |
+| 7. Live | Customers order in the app; payments in Square; orders in your kitchen. |
 
 No code or infrastructure is required on the merchant side. The technical work is connecting Square once and configuring the dashboard; Layout handles the rest.
 

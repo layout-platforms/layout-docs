@@ -1,73 +1,113 @@
 ---
 title: Business value
-description: What Layout Mobile delivers for multi-location coffee shops and how it fits with Square and your operations.
+description: What Layout Mobile delivers for local and multi-location coffee shops and how it fits with Square and your operations.
 ---
 
-This page summarizes the **business value** of Layout Mobile for multi-location coffee shop owners and for partners or investors evaluating the platform. It stays high-level and avoids implementation detail.
+This page summarizes the **business value** of Layout Mobile for coffee shop owners, technical evaluators, and partners or investors. It stays high-level and avoids implementation detail.
 
 ## For multi-location coffee shop owners
 
-### One branded app, all locations
+### Your brand, your app
 
-You get a **customer-facing mobile app** under your brand—your name, logo, and colors—that works across all your locations. Customers choose a store, browse your menu, and pay with card or Apple Pay. You don’t build or host the app; Layout runs the platform and keeps it in sync with your Square account.
+You get a **native iOS app** under your brand — your business name, logo, colors, and menu — published to the App Store as its own listing. Customers download your app, choose a location, order ahead, and pay with card or Apple Pay. You don't build or host the app; Layout runs the platform and keeps it in sync with your Square account.
 
 ### Works with what you already use
 
-Layout is built for merchants who already use **Square** for POS and payments. We don’t replace Square; we add a mobile ordering and kitchen layer on top:
+Layout is built for merchants who already use **Square** for POS and payments. We don't replace Square; we add a mobile ordering, engagement, and kitchen layer on top:
 
-- **Catalog and locations** — Managed in Square; we sync so the app always reflects your current menu and stores.
-- **Payments** — Processed by Square. Settlement and reporting stay in your Square account.
-- **Kitchen** — Use our kitchen panel (Layout KDS) or keep Square KDS; we support both.
+- **Catalog and locations** — Managed in Square; synced to the app automatically via webhooks and a daily job.
+- **Payments** — Processed by Square. Settlement and reporting stay in your Square account. Zero transaction fees from Layout.
+- **Loyalty** — If you use Square Loyalty, customers can see their balance, enroll, and earn points in the app.
+- **Kitchen** — Use our kitchen panel (Layout KDS), Square KDS, or Square Expeditor; we support all three.
 
-So you keep one system for register and payments; we add the app and optional kitchen display.
+### Customer engagement built in
 
-### Control and visibility
+Every plan includes tools to bring customers back:
 
-- **Dashboard** — Configure branding, which locations are live, order and pickup behavior, and (if you use it) loyalty. View analytics and operations in one place.
-- **Kitchen panel** — See orders by location and move them through status (e.g. accepted → making → ready → completed). Optional customer-facing status and notifications when using Layout KDS.
-- **Multi-location** — One app, many locations; orders and reporting are location-aware so you can see performance by store.
+- **Push notifications** — Unlimited. Send targeted messages or let loyalty point notifications fire automatically.
+- **Announcement cards** — Surface in-app messages about promotions, new menu items, or store news.
+- **Welcome offer** — Automatically apply a first-order discount for new customers.
+- **Promotions & featured items** — Run in-app promotions (with optional Square discount codes) and highlight specific menu items.
+
+### Gift cards (Plus)
+
+On the Plus plan, customers can purchase, reload, link, and redeem **Square gift cards** directly in the app. Designs are configurable per brand.
+
+### One dashboard, all locations
+
+- **Dashboard** — Configure branding, which locations are active, order and pickup behavior, promotions, and analytics in one place.
+- **Kitchen panel** — See orders by location and move them through status. Optional customer-facing status and push notifications with Layout KDS.
+- **Analytics** — Revenue and order analytics by location, with engagement metrics on Plus.
+
+## Plans at a glance
+
+| | **Starter** | **Pro** | **Plus** |
+|---|---|---|---|
+| **Price** | $0/month | $250/month | $500/month |
+| Branded iOS app | ✓ | ✓ | ✓ |
+| Customer accounts & order history | ✓ | ✓ | ✓ |
+| Square Loyalty integration | ✓ | ✓ | ✓ |
+| Unlimited push notifications | ✓ | ✓ | ✓ |
+| Announcement cards | ✓ | ✓ | ✓ |
+| Basic dashboard | ✓ | ✓ | ✓ |
+| **Mobile ordering** | — | ✓ | ✓ |
+| Real-time menu sync with Square | — | ✓ | ✓ |
+| Zero transaction fees | — | ✓ | ✓ |
+| Revenue analytics | — | ✓ | ✓ |
+| Featured items | — | ✓ | ✓ |
+| Advanced dashboard | — | ✓ | ✓ |
+| **Square gift cards** | — | — | ✓ |
+| Priority support | — | — | ✓ |
+| White-glove onboarding | — | — | ✓ |
+| Quarterly performance reviews | — | — | ✓ |
+| Detailed engagement metrics | — | — | ✓ |
+| **Additional location** | N/A | +$150/mo | +$150/mo |
+
+See [Pricing](/pricing) for the full breakdown.
 
 ## For technical evaluators
 
 ### Clear integration model
 
-- **Square as source of truth** — Catalog, locations, and payments flow through Square. We sync and orchestrate; we don’t duplicate payment processing or replace your POS.
-- **Secure, tenant-scoped** — OAuth for Square; tokens and data scoped by company (and location). No cross-tenant access; webhooks verified.
-- **Reliability** — Idempotent payment creation to avoid double charges; order state checks; webhook verification; sync via events and scheduled jobs.
-
-So: **predictable boundaries** (Square vs Layout), **isolation** (tenant/location), and **designed-in** reliability and security.
+- **Square as source of truth** — Catalog, locations, inventory, and payments flow through Square. We sync and orchestrate; we don't duplicate payment processing or replace your POS.
+- **Square OAuth with auto-refresh** — Connect once; tokens are refreshed automatically. No manual reconnect needed.
+- **14 Square scopes** — Catalog, locations, payments, customers, loyalty, gift cards, and inventory — covering the full feature set.
+- **Webhook-driven** — 11 Square webhook event types handled: catalog, inventory, location, loyalty, customer, order, fulfillment, and payment events.
+- **Secure, tenant-scoped** — OAuth tokens and data scoped by company and location. `merchantToCompany` routing ensures webhooks never cross tenant boundaries.
+- **Reliability** — Idempotent payment creation to avoid double charges; order state checks; daily scheduled sync backstop; auto-refreshing Square tokens.
 
 ### Architecture and operations
 
-- **Hosted platform** — No merchant-hosted servers or databases. Layout runs the backend, dashboard, and panel; the customer app talks to our APIs and (where used) real-time channels for status.
-- **Documented at the right level** — This documentation focuses on concepts, integration flow, reliability, and security. No internal schemas, secrets, or low-level APIs—suitable for evaluation and partner discussions.
+- **Hosted platform** — No merchant-hosted servers or databases. Layout runs the backend, dashboard, and panel.
+- **Stripe billing** — Subscription management via Stripe; billing status (active, past_due, canceled) gates features at the plan level.
+- **Per-brand App Store listing** — Each merchant's app is submitted to the App Store under their brand with per-company Universal Links via dynamically served Apple App Site Association files.
 
 ## For investors and partners
 
 ### Market and product fit
 
-Layout targets **multi-location coffee shops (and similar merchants) on Square** who want:
+Layout targets **local and multi-location coffee shops (and similar quick-service merchants) on Square** who want:
 
 - A **branded mobile app** without building and maintaining their own.
-- **Alignment with Square** — same catalog, locations, and payments they already use.
-- **Multi-location and kitchen** — one app, location-aware orders, and optional Layout or Square KDS.
+- **Alignment with Square** — same catalog, locations, payments, loyalty, and gift cards they already use.
+- **Engagement tools** — push notifications, promotions, welcome offers, and announcements out of the box.
+- **Multi-location and kitchen** — one app, location-aware orders, and flexible KDS support.
 
-The product is scoped to **add value on top of Square**, not replace it—reducing integration risk and fitting how these merchants already operate.
+The product is scoped to **add value on top of Square**, not replace it — reducing integration risk and fitting how these merchants already operate.
 
 ### Technical credibility
 
-- **Integration** — Square OAuth, catalog/location sync, webhooks, idempotent payments. Clear separation of responsibilities (Square = payments and catalog source; Layout = app, orders, kitchen).
-- **Security and reliability** — Tenant isolation, no card data in Layout, verified webhooks, idempotency. Principles are documented and designed into the flow.
-- **Multi-tenant, multi-location** — Company and location model is explicit; data and access are scoped accordingly.
-
-This documentation is the main artifact for **technical credibility**: it’s structured, professional, and focused on architecture, integration, reliability, and security without exposing internals.
+- **Integration depth** — Square OAuth, 14 API scopes, 11 webhook event types, idempotent payments, catalog/inventory/loyalty/gift card sync.
+- **Security and reliability** — Tenant isolation, no card data in Layout, HMAC-verified webhooks, idempotency, auto-token refresh, daily sync backstop.
+- **Multi-tenant, multi-location** — Company and location model is explicit; data and access are scoped accordingly; additional locations billed transparently.
+- **Engagement layer** — Push notifications, loyalty integration, promotions, and gift cards create retention loops beyond simple ordering.
 
 ## Summary
 
 | Audience | Takeaway |
 |----------|----------|
-| **Owners** | Branded app for all locations; works with Square POS and KDS; one dashboard and optional kitchen panel. |
-| **Evaluators** | Square-first integration; tenant and location isolation; idempotent payments; verified webhooks; no card data in Layout. |
-| **Investors / partners** | Clear product-market fit (Square-based multi-location); documented architecture and security; no internal implementation exposed. |
+| **Owners** | Branded iOS app for all locations; works with Square POS, loyalty, and gift cards; one dashboard and optional kitchen panel; engagement tools on every plan. |
+| **Evaluators** | Square-first, deeply integrated (14 scopes, 11 webhook types); tenant and location isolation; idempotent payments; auto-refreshing tokens; verified webhooks; Stripe billing. |
+| **Investors / partners** | Clear product-market fit (Square-based local/multi-location); three-tier pricing (Starter/Pro/Plus) with location add-ons; documented architecture and security. |
 
-For the rest of the story, start with [Overview](/overview) and [Architecture overview](/architecture/overview), then [Square integration](/integrations/square), [Reliability](/reliability), and [Security](/security).
+For the rest of the story, start with [Overview](/overview) and [Pricing](/pricing), then [Architecture overview](/architecture/overview), [Square integration](/integrations/square), [Reliability](/reliability), and [Security](/security).

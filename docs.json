@@ -33,7 +33,7 @@
     "groups": [
       {
         "group": "Getting started",
-        "pages": ["index", "overview", "getting-started/quickstart"]
+        "pages": ["index", "overview", "pricing", "getting-started/quickstart"]
       },
       {
         "group": "Platform",
