@@ -3,99 +3,83 @@ title: Integration flow
 description: How a customer order moves from app to payment and kitchen, and how Square and Layout stay in sync.
 ---
 
-This page walks through the main flows: **customer order and payment**, **Square ↔ Layout sync**, **kitchen display**, and **engagement features**. It's conceptual — no request schemas or internal APIs — so evaluators and partners can see how the pieces fit together.
+This page walks through the main flows: **customer order and payment**, **Square ↔ Layout sync**, **kitchen display**, and **engagement features**. It's conceptual — focused on what happens, not how it's built internally.
 
 ## Customer order and payment
 
-1. **Customer** opens the branded app, picks a **location**, and browses the menu (catalog synced from Square). Items that are sold out in Square are automatically hidden or flagged based on near-real-time inventory sync.
-2. **Cart and order** — The customer builds a cart and proceeds to checkout. The app creates an order (pending payment) in the platform, scoped to company and location. If the customer selects a future pickup time, that time slot is validated against operating hours and a prep lead time is stored on the order.
-3. **Promotions and discounts** — Before payment, the backend evaluates:
-   - **Square-side catalog discounts** — Applicable discount objects from Square's catalog are applied to line items.
-   - **Welcome offer** — A first-order discount is automatically applied for new customers (deduped by phone number, device install ID, and email hash so it can't be claimed more than once).
-   - **Dashboard promotions** — Merchant-created in-app promotions (with optional Square discount code integration) are evaluated and applied.
-4. **Checkout** — The app calls the backend with the order reference and payment details (card nonce from Square's in-app payment SDK, or Apple Pay). The backend:
-   - Verifies the customer's identity (phone-authenticated session token).
-   - Confirms the order exists and is in a payable state (pending payment).
-   - Calls Square to create the payment using **idempotency keys** so retries don't double-charge.
-   - Optionally triggers loyalty or gift card actions in Square as part of the same checkout.
-5. **Result** — Square processes the payment; the backend updates the order state (paid) and returns success to the app. The customer sees confirmation; the order is available for the kitchen.
-6. **Post-checkout** — If loyalty is enabled, the backend syncs the customer's loyalty balance from Square so the app shows up-to-date points. A push notification may also fire to confirm points earned.
+1. **Customer** opens the branded app, picks a **location**, and browses the menu. Items that are sold out in Square are automatically reflected in the app.
+2. **Cart and order** — The customer builds a cart and proceeds to checkout. If the customer selects a future pickup time, that slot is validated and stored with the order.
+3. **Promotions and discounts** — Before payment, applicable discounts are evaluated and applied automatically. This includes welcome offers for first-time customers, any active in-app promotions, and Square-side discounts. The specifics of how eligibility is determined are handled by the backend.
+4. **Checkout** — The app sends the order and payment details to the backend. The backend verifies the customer's identity, confirms the order is in a valid state, and creates the payment in Square using a unique key to prevent duplicate charges.
+5. **Confirmation** — Square processes the payment; the order is confirmed and made available to the kitchen. The customer sees confirmation in the app.
+6. **Post-checkout** — Loyalty balance is updated and the customer may receive a push notification confirming any points earned.
 
-Payment always goes through Square; Layout never holds card data or settles funds. Idempotency ensures that network retries or duplicate taps don't result in duplicate charges.
+Payment always goes through Square. Layout never holds card data or settles funds.
 
 ## Gift cards
 
 Customers can interact with Square gift cards entirely within the app:
 
-- **Purchase** — Buy a new Square gift card (paid via Apple Pay or card). The backend creates the gift card in Square and links it to the customer's account.
+- **Purchase** — Buy a new Square gift card from within the app.
 - **Reload** — Add funds to an existing gift card.
-- **Link by GAN** — Link an existing physical gift card by entering its GAN (gift card account number).
+- **Link** — Connect an existing physical gift card to the account.
 - **Redeem** — Apply a gift card balance at checkout.
-- **Designs** — Each merchant can configure a custom gift card design, uploaded through the dashboard.
+- **Designs** — Each merchant can configure a custom gift card design through the dashboard.
 
-Gift card data is synced from Square; the platform does not hold gift card balances independently.
+Gift card balances and data are always sourced from Square.
 
-## Square → Layout: catalog and locations
+## Keeping Square and Layout in sync
 
-- **Initial sync** — After Square is connected (OAuth), Layout syncs your locations and catalog (items, categories) into the platform. The dashboard and app then read from this synced data.
-- **Catalog source** — Layout supports two Square catalog modes:
-  - **Legacy categories** — Standard Square `CATEGORY` objects.
-  - **Square Menus** — Square `MENU_CATEGORY` objects (for accounts using the Square Menus feature). Configured per company.
-- **Ongoing updates** — When you change catalog or locations in Square:
-  - **Webhooks** — Square sends events (catalog version updated, location updated/created/deleted, inventory count updated). Layout verifies the webhook signature, routes to the correct company via the `merchantToCompany` mapping, and updates the synced data.
-  - **Daily scheduled sync** — A scheduled job runs every 24 hours as a backstop so that even if a webhook was missed or delayed, data converges overnight.
-- **Inventory** — When Square sends an `inventory.count.updated` event, the backend patches the sold-out flag on affected item variations in near real-time.
+- **At connect** — After Square OAuth is authorized, Layout syncs your locations and catalog immediately.
+- **Event-driven** — When things change in Square (catalog, inventory, locations, loyalty), Square sends event notifications to Layout. We verify each one and update the relevant data for your account.
+- **Daily scheduled sync** — A scheduled job runs every 24 hours as a backstop to catch anything that may have been missed, ensuring data stays accurate overnight.
+- **Inventory** — Sold-out states update in near real-time when Square reports inventory changes.
 
-So: **Square is the source of truth**; Layout is a read-through cache and orchestrator. We don't document webhook URLs or payloads — only that updates are signature-verified and tenant-scoped.
+Square is the source of truth. Layout reflects what's in Square — it never writes catalog or location data back.
 
-## Loyalty sync
+## Loyalty
 
-- When a customer earns loyalty points (Square `loyalty.event.created` webhook), the backend queues a push notification job to inform the customer.
-- Loyalty program and account data sync from Square on a schedule and after relevant checkout actions.
-- Enrollment and redemption are handled in-app; the backend coordinates with Square's Loyalty API.
+- Loyalty balance and program data sync both on a schedule and after relevant checkout actions.
+- When a customer earns loyalty points, a push notification is automatically sent to let them know.
+- Enrollment and redemption happen in the app; the backend coordinates with Square's Loyalty system.
 
 ## Kitchen display and order status
 
-- **Layout KDS** — Staff open the kitchen panel, pick a location, and see orders for that location. They move orders through statuses (accepted → making → ready → completed). Status is stored in the platform; the customer app shows live status and can optionally surface a push notification or iOS Live Activity on the lock screen.
-- **Square KDS** — If you use Square's kitchen display only, Layout doesn't push status from our side. The app shows order confirmation and an estimated pickup time.
-- **Square Expeditor** — A variant where Square's two-step fulfillment model (PROPOSED → PREPARED) maps to Layout's status: PREPARED triggers the "ready" state directly, skipping the "making" step. Configured via the fulfillment webhook handler.
+- **Layout KDS** — Staff open the kitchen panel, pick a location, and see that location's orders. Moving an order through status (accepted → making → ready → completed) updates what the customer sees in the app, and can trigger a push notification or iOS Live Activity on their lock screen.
+- **Square KDS** — If you use Square's kitchen display only, the app shows order confirmation and an estimated pickup time.
+- **Square Expeditor** — A workflow variant where Square's fulfillment transitions map to Layout's status model, suited for counter-service operations.
 
-Either way, **orders** are created and paid in the platform and Square; the kitchen view (Layout or Square) is what staff use day to day.
-
-## End-to-end in one picture
+## End-to-end picture
 
 ```
-Customer app (branded)     Backend                    Square
-       |                      |                         |
-       |  Create order        |                         |
-       |--------------------->|                         |
-       |  (Apply promotions,  |                         |
-       |   welcome offer,     |                         |
-       |   pickup time)       |                         |
-       |                      |  Create payment         |
-       |                      |------------------------>|
-       |                      |<------------------------|
-       |  Order confirmed     |                         |
-       |<---------------------|                         |
-       |                      |  Loyalty sync           |
-       |                      |<------------------------|
-       |  (Optional: push,    |                         |
-       |   Live Activity,     |                         |
-       |   status updates)    |                         |
-       |<---------------------|                         |
+Customer app          Backend               Square
+     |                   |                    |
+     |  Place order       |                    |
+     |------------------>|                    |
+     |  (Discounts,       |                    |
+     |   pickup time)     |                    |
+     |                   |  Create payment    |
+     |                   |------------------->|
+     |                   |<-------------------|
+     |  Order confirmed  |                    |
+     |<------------------|                    |
+     |                   |  Loyalty sync      |
+     |                   |<-------------------|
+     |  (Push, status,   |                    |
+     |   Live Activity)  |                    |
+     |<------------------|                    |
 
-Catalog / locations:  Square --> (webhooks + daily sync) --> Layout --> App & Dashboard
-Inventory:            Square --> (inventory webhook)      --> Layout --> App (sold-out flags)
+Catalog / locations:  Square --> (events + daily sync) --> Layout --> App & Dashboard
+Inventory:            Square --> (inventory events)     --> Layout --> App (sold-out)
 Gift cards:           Square <-> Layout backend <-> Customer app
-Kitchen:              Layout panel <--> order status <--> Customer app (when Layout KDS)
+Kitchen:              Layout panel <-> order status <-> Customer app (Layout KDS)
 ```
 
-## Why this matters for evaluators
+## What this means for shop owners
 
-- **Payments** — Single path through Square; idempotency on payment creation; no card data in Layout.
-- **Catalog and locations** — One source of truth (Square); Layout syncs and reflects changes via both event-driven webhooks and a daily scheduled backstop.
-- **Inventory** — Near-real-time sold-out sync via webhook; no manual item management needed on the Layout side.
-- **Orders** — Created and stored in the platform; payment is delegated to Square; status is available to kitchen and customer in a consistent way.
-- **Engagement** — Promotions, welcome offers, and loyalty push notifications are wired into the checkout and Square event flows, not bolted on separately.
+- **Your menu is always current** — Changes in Square appear in the app automatically. No manual syncing needed.
+- **Payments stay in Square** — Every dollar processed goes through your Square account. Layout never touches settlement.
+- **Orders are reliable** — The system is designed so duplicate taps, network retries, and edge cases don't result in double charges or lost orders.
+- **Your kitchen workflow stays yours** — Whether you use Layout KDS, Square KDS, or Square Expeditor, orders flow to where your team already works.
 
-For deeper detail on Square (what we sync, OAuth, webhooks), see [Square integration](/integrations/square). For how we avoid duplicate charges and handle failures, see [Reliability](/reliability).
+For more on Square sync and connection, see [Square integration](/integrations/square). For reliability and payment safety, see [Reliability](/reliability).

@@ -3,7 +3,7 @@ title: Architecture overview
 description: "High-level structure of Layout Mobile: customer app, dashboard, kitchen panel, and backend."
 ---
 
-This page describes how Layout Mobile is structured at an infrastructure level — without implementation details, schemas, or internal APIs. It's for technical evaluators and partners who need a clear mental model of the system.
+This page describes how Layout Mobile is structured at a high level — without internal implementation details, data schemas, or proprietary logic. It's for technical evaluators and partners who need a clear mental model of how the system works.
 
 ## System components
 
@@ -12,50 +12,47 @@ Layout Mobile has four main surfaces and a backend that ties them together:
 | Component | Role | Users |
 |-----------|------|--------|
 | **Customer app** | Branded iOS app for browsing menu, choosing location, ordering, tracking status, and engaging with loyalty, gift cards, and promotions. | End customers |
-| **Merchant dashboard** | Web app for branding, Square connection, menu/locations (synced from Square), order settings, loyalty, promotions, gift cards, and analytics. | Owners and operators |
-| **Kitchen panel** | Web-based panel for viewing orders and updating status by location; supports Layout KDS, Square KDS, and Square Expeditor. | Kitchen and store staff |
-| **Backend** | APIs, Square sync, webhooks, payment orchestration, push notifications, and secure token storage. | Used by all of the above |
+| **Merchant dashboard** | Web app for branding, Square connection, location management, order settings, loyalty, promotions, analytics, and more. | Owners and operators |
+| **Kitchen panel** | Web-based panel for viewing and updating orders by location. Supports Layout KDS, Square KDS, and Square Expeditor. | Kitchen and store staff |
+| **Backend** | Hosted APIs, Square sync, event handling, payment orchestration, push notifications, and secure credential management. | Used by all of the above |
 
-Data and identity are **tenant-scoped**: every request and record is tied to a company (and often a location). There is no shared cross-tenant data layer; isolation is built into the model.
+All data is **company-scoped**: every request and record is tied to a specific merchant account (and often a specific location). There is no shared data across merchants.
 
-## Data flow (conceptual)
+## How data flows
 
-- **Square** is the source of truth for catalog, locations, and payments. Layout connects via OAuth and keeps a secure, per-tenant connection with automatic token refresh.
-- **Catalog and locations** flow from Square into the platform via initial sync and ongoing updates (webhooks and daily scheduled jobs). The customer app and dashboard read this data; they don't write catalog back to Square from the app.
-- **Inventory** — Sold-out states sync from Square via `inventory.count.updated` webhooks so the app reflects item availability in near real-time.
-- **Orders** are created in the platform (customer app → backend), then payment is processed with Square. Order state (pending payment → paid → status updates) is stored in the platform; kitchen and customer app consume it.
-- **Kitchen** reads and updates order status. When Layout KDS is used, those updates can drive customer-facing status, push notifications, and iOS Live Activity.
-- **Billing** — Merchant subscriptions are managed via Stripe. Billing status (active, past_due, canceled) is synced from Stripe webhooks and gates features like mobile ordering and gift cards at the plan level.
+- **Square** is the source of truth for catalog, locations, and payments. Layout connects via OAuth and maintains a secure, per-merchant connection.
+- **Catalog and locations** sync from Square into the platform at connect time and stay current via Square event notifications and a daily scheduled job.
+- **Inventory** reflects Square's sold-out states in near real-time.
+- **Orders** originate in the app, move through the backend, and payment is processed by Square. Order status is tracked in the platform and surfaced to both the kitchen and the customer app.
+- **Billing** — Merchant subscriptions are managed via Stripe. Plan status gates access to features like ordering and gift cards.
 
-So: **Square owns catalog, locations, and money movement**. **Stripe owns subscription billing**. Layout owns **app configuration, order lifecycle, engagement features, and kitchen display**, and orchestrates payment with Square.
+Square owns catalog, locations, and money movement. Stripe owns subscription billing. Layout owns the app experience, order lifecycle, engagement features, and kitchen display.
 
 ## Authentication and access
 
-- **Customer app** — Users sign in via phone-based authentication. Sessions are validated by the backend for API calls (e.g. checkout, loyalty, gift cards). Tokens are not shared across companies.
-- **Dashboard and panel** — Staff and owners sign in to the web app; access is scoped to their company (and optionally location for the panel). Role-based JWT claims (`layoutStaff` and similar) determine what they can see and change.
-- **Square** — Connection is per company. OAuth tokens are stored securely and automatically refreshed before expiry. Webhooks from Square are verified (HMAC signature check) before processing. Each webhook is routed to the correct company via a `merchantToCompany` lookup, ensuring a Square event always maps to exactly one tenant.
+- **Customer app** — Customers sign in via phone-based authentication. Every action (ordering, checkout, loyalty) requires a valid session tied to that customer.
+- **Dashboard and panel** — Owners and staff sign in with role-based access. Permissions are scoped to the company and, where relevant, specific locations. Only authorized users can change settings, connect Square, or view sensitive data.
+- **Square** — The connection is per merchant. Tokens are stored securely and automatically refreshed. All Square event notifications are verified before processing.
 
-No customer or merchant credentials are mixed; each channel has clear identity and scope.
+No customer or merchant credentials are mixed across merchants.
 
 ## Where things run
 
-- **Customer app** — Native iOS; talks to backend APIs and real-time listeners for order status.
-- **Dashboard and panel** — Web apps; talk to the same backend and tenant-scoped data store.
-- **Backend** — Hosted serverless/cloud services that handle HTTP and webhook endpoints, Square sync, scheduled jobs, and background push notification delivery. No merchant-hosted infrastructure is required.
-
-Layout runs the backend, dashboard, and panel; merchants don't run servers or databases.
+- **Customer app** — Native iOS app; communicates with the backend for ordering, status, and account data.
+- **Dashboard and panel** — Web apps; use the same backend and tenant-scoped data.
+- **Backend** — Hosted and operated entirely by Layout. No merchant-hosted servers or databases are required. Merchants connect Square and configure the dashboard; Layout handles the rest.
 
 ## Integration points
 
 | External system | Layout's role |
 |-----------------|----------------|
-| **Square** | OAuth with auto-refresh, catalog/location/loyalty/inventory/gift-card sync, payment creation, webhooks for catalog, location, loyalty, inventory, order, and fulfillment events. |
-| **Stripe** | Subscription billing; webhooks authoritatively update billing status in the platform. |
-| **Push / Live Activity** | Customer notifications (order status, loyalty points earned) and iOS Live Activity for lock-screen order tracking. |
-| **Apple App Store** | Each merchant's branded app is submitted and distributed as a distinct App Store listing with per-brand Universal Links. |
+| **Square** | OAuth connection, catalog/location/inventory/loyalty/gift card sync, payment creation, event-driven updates. |
+| **Stripe** | Subscription billing; plan status kept in sync via Stripe event notifications. |
+| **Push / Live Activity** | Customer notifications for order status and loyalty, plus iOS Live Activity for lock-screen order tracking. |
+| **Apple App Store** | Each merchant's branded app is submitted as a distinct App Store listing with per-brand deep link support. |
 
 ## Next steps
 
-- [Integration flow](/architecture/integration-flow) — Step-by-step flow from customer order to payment and kitchen.
-- [Square integration](/integrations/square) — What we sync, how we connect, and how updates flow.
-- [Multi-location](/multi-location) — How companies and locations are modeled and used.
+- [Integration flow](/architecture/integration-flow) — How a customer order moves from app to payment and kitchen.
+- [Square integration](/integrations/square) — What we sync, how the connection works, and how updates flow.
+- [Multi-location](/multi-location) — How companies and locations are modeled.

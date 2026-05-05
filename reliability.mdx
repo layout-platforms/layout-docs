@@ -3,64 +3,48 @@ title: Reliability
 description: How Layout Mobile handles failures, retries, and consistency so orders, payments, and sync stay correct.
 ---
 
-This page describes how we approach **reliability** at a conceptual level — for technical evaluators and partners who care about correctness under retries, duplicates, and partial failures. We don't document internal retry counts or timeouts; we focus on principles and behavior.
+This page describes how we approach **reliability** — for shop owners who want to know their orders are safe, and for technical evaluators who care about correctness under retries, duplicates, and partial failures.
 
-## Payment and idempotency
+## Payment safety
 
-**Problem** — Networks and devices can retry. A customer might tap "Pay" twice, or the app might retry after a timeout. Without care, that could create duplicate charges.
+**The problem** — Networks fail and customers sometimes tap "Pay" twice. Without care, that could create duplicate charges.
 
-**Approach** — Payment requests are **idempotent**. The backend sends a stable idempotency key (derived from order and payment context) to Square when creating the payment. Square treats duplicate requests with the same key as one payment. So:
+**How we handle it** — Every payment request is designed so that retries and duplicates don't result in a second charge. The backend also checks order state before creating any payment — if an order is already paid, no new charge is attempted. These two layers of protection work together so a customer is never billed twice for a single order.
 
-- A single logical payment corresponds to at most one charge.
-- Retries and duplicate taps don't result in double charges.
+Payment always flows through Square. Layout never holds card data or settles funds.
 
-The same principle applies to loyalty and gift card actions at checkout — idempotency prevents rewards from being applied more than once per order.
+## Square connection reliability
 
-## Order state and payment
+Square OAuth tokens are automatically refreshed by the backend before they expire. Your Square connection stays active indefinitely — you never need to manually reconnect or worry about token expiry interrupting your store.
 
-Before creating a payment, the backend:
+## Keeping data in sync
 
-1. **Verifies** the customer's identity (valid phone-authenticated session token).
-2. **Loads** the order and checks that it's in a payable state (pending payment).
-3. If the order is already paid (or otherwise not payable), the backend returns a conflict response instead of calling Square again.
+- **Event-driven** — When things change in Square (catalog, inventory, locations, loyalty), Square sends event notifications and Layout updates your data promptly.
+- **Daily scheduled sync** — A scheduled job runs every 24 hours as a backstop. Even if an event was delayed or missed, data converges overnight without any action needed from you.
+- **Inventory** — Sold-out states update in near real-time so the app reflects what's actually available to customers.
+- **All sync is per-merchant** — One merchant's data never affects another's.
 
-So even without idempotency, we avoid creating a second payment for the same order. Idempotency adds a second layer of protection for retries and duplicates.
+## Loyalty and notifications
 
-## Square OAuth token refresh
+Loyalty balance updates sync both on a schedule and immediately after checkout. When a customer earns points, a push notification is queued and delivered asynchronously — so notification delivery never holds up the checkout flow.
 
-Square OAuth tokens have a limited lifespan. The backend **automatically refreshes tokens before they expire**, so your Square connection stays active indefinitely. Merchants never need to reconnect Square or take manual action when tokens rotate. A notification is sent to Layout's accounts team whenever a Square reconnect occurs, for visibility.
+## Webhook integrity
 
-## Catalog and location sync
-
-- **Source of truth** — Square. We sync into the platform so the app and dashboard have current data.
-- **Triggers** — Square webhooks (catalog version updated, location created/updated/deleted) drive near-real-time updates.
-- **Daily scheduled sync** — A scheduled job runs every 24 hours as a backstop. Even if a webhook was missed or delayed, catalog and locations converge overnight. This ensures data accuracy without relying solely on event delivery.
-- **Inventory** — `inventory.count.updated` webhooks patch sold-out flags on item variations in near real-time, so the app reflects what's actually available.
-- **Scope** — All sync is per-tenant (per company). One merchant's data never overwrites another's.
-
-## Loyalty and engagement reliability
-
-- Loyalty balance and program data sync both on a schedule and after relevant checkout actions, ensuring the app displays accurate point balances.
-- When a `loyalty.event.created` webhook fires (points earned), the backend queues a push notification job. Queuing decouples delivery from the webhook handler so a notification delay doesn't affect the checkout flow.
-
-## Webhook verification
-
-Incoming webhooks from Square are **verified** before processing using Square's HMAC signature. Invalid or tampered requests are rejected before any data is read or written. Each webhook is also routed to the correct tenant via a `merchantToCompany` lookup, ensuring events from one merchant never affect another's data.
+All incoming Square event notifications are cryptographically verified before Layout acts on them. Events that don't pass verification are rejected. This ensures only legitimate Square signals change your data.
 
 ## What we don't guarantee here
 
-We don't document SLAs, uptime numbers, or RTO/RPO in this doc. The intent is to show that we **design for** idempotency, clear order state, auto-refreshing tokens, and verified webhooks so that payments and data stay correct under retries and failures. For formal SLAs or incident process, refer to your agreement or Layout's status page.
+We don't publish SLAs, uptime numbers, or incident response times in this doc. For formal service commitments, refer to your merchant agreement or [Layout's status page](https://status.layoutmobile.com).
 
 ## Summary
 
-| Area | Principle |
-|------|------------|
-| **Payments** | Idempotency keys with Square; order state checked before payment; no double charge on retries. |
-| **Orders** | Single payable state per order; conflict response if already paid. |
-| **Square tokens** | Automatically refreshed before expiry; no manual reconnect required. |
-| **Catalog & locations** | Webhooks for near-real-time updates; daily scheduled sync as backstop; tenant-scoped. |
-| **Inventory** | Near-real-time sold-out sync via `inventory.count.updated` webhook. |
-| **Loyalty & push** | Loyalty sync on schedule and post-checkout; push notifications queued to decouple from webhook handling. |
-| **Webhooks** | HMAC signature verification; tenant routing via `merchantToCompany`; reject invalid or cross-tenant events. |
+| Area | How we handle it |
+|------|-----------------|
+| **Payments** | Duplicate-charge protection at two layers; order state checked before every payment. |
+| **Square connection** | Tokens auto-refreshed; no manual reconnect needed. |
+| **Catalog & locations** | Event-driven updates plus daily scheduled sync as a backstop. |
+| **Inventory** | Near-real-time sold-out sync from Square. |
+| **Loyalty & push** | Sync on schedule and post-checkout; push delivery queued independently of checkout. |
+| **Event integrity** | Cryptographic verification on all incoming Square notifications. |
 
 For how we protect data and access, see [Security](/security). For how orders and payments flow end-to-end, see [Integration flow](/architecture/integration-flow).
