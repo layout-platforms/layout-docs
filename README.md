@@ -1,65 +1,28 @@
 # Layout Mobile Documentation
 
-Public-facing documentation for **Layout Mobile**—a white-label mobile ordering platform for multi-location coffee shops using Square. Built with [Mintlify](https://mintlify.com).
+Welcome to the Layout Mobile docs. This is where coffee shop owners, operators, and technical evaluators can learn how our platform works, how it connects to Square, and what to expect when running a branded mobile app for your business.
 
-## Audience
+## What is Layout Mobile
 
-- Multi-location coffee shop owners using Square who want a branded mobile app
-- Technical evaluators (reliability, security, Square integration)
-- Early-stage investors reviewing technical credibility
+Layout Mobile is a branded mobile ordering platform built for multi-location coffee shops and restaurants using Square. We give independent businesses the same kind of mobile ordering, loyalty, and push notification tools that big chains rely on, without changing how your team already works.
 
-## Run locally
+## Who these docs are for
 
-Requires Node.js v20.17+ and the Mintlify CLI.
+- **Shop owners and operators** evaluating Layout for their business or getting set up
+- **Technical and security reviewers** looking into how we handle reliability, data, and the Square integration
+- **Partners and investors** who want to understand the platform at a deeper level
 
-Install the CLI (run once):
+## What you'll find here
 
-```bash
-npm i -g mint
-```
+- **Overview** — What Layout Mobile does and the core ideas behind it
+- **Getting Started** — How merchants come onboard and go live
+- **Architecture** — How the platform is built and how the pieces fit together
+- **Square Integration** — How we connect to Square, sync your menu, and process payments
+- **Multi-Location** — How we handle businesses with more than one shop
+- **Reliability** — How we keep orders accurate and the system stable
+- **Security** — How we protect your data, payments, and customer info
+- **Business Value** — What Layout means for owners, reviewers, and investors
 
-Start the dev server:
+## Questions
 
-```bash
-mint dev
-```
-
-Then open [http://localhost:3000](http://localhost:3000).
-
-## Deploy (GitHub → Mintlify)
-
-1. **Push this folder to your GitHub repo** (if you haven’t already):
-
-   ```bash
-   cd /path/to/LayoutDocs
-   git init
-   git add .
-   git commit -m "Initial docs"
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-2. **Connect the repo to Mintlify:**
-   - Go to [mintlify.com/start](https://mintlify.com/start).
-   - Sign in and connect your GitHub account.
-   - Choose “Connect existing repository” and select this repo (or create a new Mintlify project and link it).
-   - Install the Mintlify GitHub App when prompted so it can deploy on push.
-
-3. **Done.** Mintlify will build and deploy on every push to the default branch. Your site will be at `https://YOUR_PROJECT.mintlify.app`. You can add a [custom domain](https://mintlify.com/docs/custom-domain) later in the Mintlify dashboard.
-
-## Structure
-
-- **docs.json** — Mintlify config (name, colors, navigation).
-- **index.mdx** — Introduction and entry point.
-- **overview.mdx** — Product scope and key concepts.
-- **getting-started/quickstart.mdx** — Merchant onboarding flow.
-- **architecture/** — System components, integration flow.
-- **integrations/square.mdx** — Square connection, sync, payments.
-- **multi-location.mdx** — Company and location model.
-- **reliability.mdx** — Idempotency, order state, sync.
-- **security.mdx** — Tenant isolation, auth, payments, webhooks.
-- **business-value.mdx** — Value for owners, evaluators, investors.
-- **public/** — Static assets (favicon, logo light/dark) served with the site so the logo doesn’t reload on every page change.
-
-Content is high-level and avoids internal implementation details, schemas, and secrets.
+If something isn't covered here or you want to talk to our team, reach out at contact@layoutmobile.com or visit [layoutmobile.com](https://layoutmobile.com).
